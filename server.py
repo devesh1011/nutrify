@@ -5,7 +5,7 @@ from PIL import Image
 from pytesseract import pytesseract
 from fastapi.responses import JSONResponse
 
-pytesseract.tesseract_cmd = "bin/tesseract-5.5.0"
+pytesseract.tesseract_cmd =  "bin/tesseract-5.5.0"
 
 app = FastAPI(
     title="Nutrify API",
