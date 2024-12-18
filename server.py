@@ -2,8 +2,10 @@ from fastapi import FastAPI, HTTPException, File, UploadFile
 from pydantic import BaseModel
 from app.main import main
 from PIL import Image
-from pytesseract import image_to_string
+from pytesseract import pytesseract
 from fastapi.responses import JSONResponse
+
+pytesseract.tesseract_cmd = "bin/tesseract"
 
 app = FastAPI(
     title="Nutrify API",
@@ -33,7 +35,7 @@ def handle_uploads(file: UploadFile = File(...)):
             )
         image = Image.open(file.file)
 
-        extracted_text = image_to_string(image)
+        extracted_text = pytesseract.image_to_string(image)
 
         return JSONResponse(content={"text": extracted_text})
 
