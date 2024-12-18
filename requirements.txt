@@ -5,3 +5,4 @@ pytesseract
 langchain
 langchain-openai
 python-dotenv
+python-multipart
