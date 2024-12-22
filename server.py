@@ -1,11 +1,6 @@
-from fastapi import FastAPI, HTTPException, File, UploadFile
+from fastapi import FastAPI, HTTPException
 from pydantic import BaseModel
 from app.main import main
-from PIL import Image
-from pytesseract import pytesseract
-from fastapi.responses import JSONResponse
-
-pytesseract.tesseract_cmd =  "bin/tesseract-5.5.0"
 
 app = FastAPI(
     title="Nutrify API",
@@ -23,24 +18,24 @@ def home():
     return "Hello World!"
 
 
-@app.post("/upload", summary="Image upload route")
-def handle_uploads(file: UploadFile = File(...)):
-    """Handles image uploads for OCR processing. Extracts text from the image and returns it."""
+# @app.post("/upload", summary="Image upload route")
+# def handle_uploads(file: UploadFile = File(...)):
+#     """Handles image uploads for OCR processing. Extracts text from the image and returns it."""
 
-    try:
-        if file.content_type not in ["image/jpeg", "image/png"]:
-            raise HTTPException(
-                status_code=400,
-                detail="Invalid file type. Only JPEG and PNG are supported.",
-            )
-        image = Image.open(file.file)
+#     try:
+#         if file.content_type not in ["image/jpeg", "image/png"]:
+#             raise HTTPException(
+#                 status_code=400,
+#                 detail="Invalid file type. Only JPEG and PNG are supported.",
+#             )
+#         image = Image.open(file.file)
 
-        extracted_text = pytesseract.image_to_string(image)
+#         extracted_text = pytesseract.image_to_string(image)
 
-        return JSONResponse(content={"text": extracted_text})
+#         return JSONResponse(content={"text": extracted_text})
 
-    except Exception as e:
-        raise HTTPException(status_code=500, detail=f"Error processing file: {str(e)}")
+#     except Exception as e:
+#         raise HTTPException(status_code=500, detail=f"Error processing file: {str(e)}")
 
 
 @app.post("/analyze", summary="Analyze food ingredients")
