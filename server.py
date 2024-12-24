@@ -1,6 +1,7 @@
 from fastapi import FastAPI, HTTPException
 from pydantic import BaseModel
 from app.main import main
+import json
 
 app = FastAPI(
     title="Nutrify API",
@@ -18,31 +19,20 @@ def home():
     return "Hello World!"
 
 
-# @app.post("/upload", summary="Image upload route")
-# def handle_uploads(file: UploadFile = File(...)):
-#     """Handles image uploads for OCR processing. Extracts text from the image and returns it."""
-
-#     try:
-#         if file.content_type not in ["image/jpeg", "image/png"]:
-#             raise HTTPException(
-#                 status_code=400,
-#                 detail="Invalid file type. Only JPEG and PNG are supported.",
-#             )
-#         image = Image.open(file.file)
-
-#         extracted_text = pytesseract.image_to_string(image)
-
-#         return JSONResponse(content={"text": extracted_text})
-
-#     except Exception as e:
-#         raise HTTPException(status_code=500, detail=f"Error processing file: {str(e)}")
-
-
 @app.post("/analyze", summary="Analyze food ingredients")
 async def analyze_ingredients(request: IngredientRequest):
     try:
-        response = main(request.ingredients)
-        return response
+        content = main(request.ingredients)
+        try:
+            # Strip unwanted characters like ```json or ```
+            content_json = json.loads(content.strip("```json").strip("```"))
+        except json.JSONDecodeError as e:
+            raise HTTPException(
+                status_code=500, detail=f"Invalid JSON format in response: {str(e)}"
+            )
+
+        return content_json
+
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
