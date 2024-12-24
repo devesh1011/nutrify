@@ -1,11 +1,11 @@
 import os
-from langchain_openai import ChatOpenAI
-from langchain_nvidia_ai_endpoints import ChatNVIDIA
+from langchain_mistralai import ChatMistralAI
+from dotenv import load_dotenv
+
+load_dotenv()
+
+print(os.getenv("NVIDIA_API_KEY"))
 
 
 def get_openai_model():
-    return ChatNVIDIA(
-        model="meta/llama-3.3-70b-instruct",
-        api_key=os.getenv("NVIDIA_API_KEY"),
-        temperature=0.1,
-    )
+    return ChatMistralAI(model_name="mistral-large-latest", temperature=0.1)
