@@ -5,6 +5,7 @@ from app.main import main
 import json
 from PIL import Image
 import easyocr
+from langserve import add_routes, RemoteRunnable
 
 app = FastAPI(
     title="Nutrify API",
@@ -37,14 +38,12 @@ async def handle_uploads(file: UploadFile = File(...)):
 
         # Load the uploaded image
         image = Image.open(file.file)
-
         reader = easyocr.Reader(["en"], gpu=False)
         result = reader.readtext(image)
-
         ingredients = [item[1] for item in result]
-
-        return analyze_ingredients("".join(ingredients))
-
+        joined_ingredients = " ".join(ingredients)
+        request = IngredientRequest(ingredients=joined_ingredients)
+        return await analyze_ingredients(request)
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Error processing file: {str(e)}")
 
@@ -52,20 +51,17 @@ async def handle_uploads(file: UploadFile = File(...)):
 @app.post("/analyze", summary="Analyze food ingredients")
 async def analyze_ingredients(ingredients: IngredientRequest):
     try:
-        content = main(ingredients)
-        try:
-            # Strip unwanted characters like ```json or ```
-            content_json = json.loads(content.strip("```json").strip("```"))
-        except json.JSONDecodeError as e:
-            raise HTTPException(
-                status_code=500, detail=f"Invalid JSON format in response: {str(e)}"
-            )
-
+        content = main(ingredients.ingredients)
+        # print(content)
+        # Strip unwanted characters like ```json or ``` and parse JSON
+        content_json = json.loads(content.strip("```json").strip("```"))
         return content_json
-
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
+
+runnable = RemoteRunnable("http://localhost:8080")
+add_routes(app, runnable)
 
 if __name__ == "__main__":
     import uvicorn
