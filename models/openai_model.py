@@ -4,8 +4,6 @@ from dotenv import load_dotenv
 
 load_dotenv()
 
-print(os.getenv("NVIDIA_API_KEY"))
-
 
 def get_openai_model():
-    return ChatMistralAI(model_name="mistral-large-latest", temperature=0.1)
+    return ChatMistralAI(model_name="mistral-large-latest", temperature=0.1, api_key=os.environ.get("MISTRAL_API_KEY"))
