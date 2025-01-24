@@ -4,7 +4,6 @@ from pydantic import BaseModel
 from app.main import main
 import json
 from PIL import Image
-import easyocr
 from langserve import add_routes, RemoteRunnable
 
 app = FastAPI(
@@ -38,12 +37,7 @@ async def handle_uploads(file: UploadFile = File(...)):
 
         # Load the uploaded image
         image = Image.open(file.file)
-        reader = easyocr.Reader(["en"], gpu=False)
-        result = reader.readtext(image)
-        ingredients = [item[1] for item in result]
-        joined_ingredients = " ".join(ingredients)
-        request = IngredientRequest(ingredients=joined_ingredients)
-        return await analyze_ingredients(request)
+        return None
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Error processing file: {str(e)}")
 

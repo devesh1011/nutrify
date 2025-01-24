@@ -5,5 +5,5 @@ from dotenv import load_dotenv
 load_dotenv()
 
 
-def get_openai_model():
+def get_model():
     return ChatMistralAI(model_name="mistral-large-latest", temperature=0.1, api_key=os.environ.get("MISTRAL_API_KEY"))
