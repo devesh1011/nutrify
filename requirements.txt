@@ -4,3 +4,4 @@ langchain-mistralai==0.2.4
 groq
 python-dotenv
 langchain
+asyncio
