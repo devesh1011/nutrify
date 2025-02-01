@@ -25,8 +25,8 @@ def get_examples():
                     "Neutral",
                     "Necessary in small amounts but harmful in excess due to the risk of high blood pressure.",
                 ],
+                "overall_rating": 6,
             },
-            "overall_rating": 6,
         },
         {
             "ingredients": [
@@ -52,8 +52,7 @@ def get_examples():
                     "Harmful",
                     "Contains synthetic chemicals that may cause allergic reactions or health concerns.",
                 ],
-            },
-            "overall_rating": 8,
+                "overall_rating": 8,
             },
         },
     ]
