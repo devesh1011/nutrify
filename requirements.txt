@@ -7,3 +7,4 @@ langchain
 asyncio
 langserve
 python-multipart
+sse_starlette
