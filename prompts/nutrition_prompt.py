@@ -54,6 +54,7 @@ def get_examples():
                 ],
             },
             "overall_rating": 8,
+            },
         },
     ]
 
