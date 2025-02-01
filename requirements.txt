@@ -6,3 +6,4 @@ python-dotenv
 langchain
 asyncio
 langserve
+python-multipart
