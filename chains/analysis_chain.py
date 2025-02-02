@@ -1,4 +1,4 @@
-from langchain_core.output_parsers import JsonOutputParser
+from langchain_core.output_parsers import StrOutputParser
 
 
 def create_analysis_chain(prompt, model):
@@ -8,4 +8,4 @@ def create_analysis_chain(prompt, model):
     :param model: The OpenAI model instance
     :return: The LangChain chain
     """
-    return prompt | model | JsonOutputParser()
+    return prompt | model | StrOutputParser()
