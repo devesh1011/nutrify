@@ -27,4 +27,8 @@ add_routes(app, runnable)
 
 if __name__ == "__main__":
     import uvicorn
-    uvicorn.run(app, port=8000)
+    import os
+
+    # Get the PORT from the environment variable (default to 8000 if not set)
+    port = int(os.getenv("PORT", 8000))
+    uvicorn.run(app, host="0.0.0.0", port=port)
