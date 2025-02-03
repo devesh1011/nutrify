@@ -15,4 +15,12 @@ def main(ingredients):
     chain = create_analysis_chain(main_prompt, model)
     response = chain.invoke({"ingredients": ingredients})
 
-    return response
+    if response.startswith("```json\n") and response.endswith("\n```"):
+        response = response[8:-4]
+
+    try:
+        json_response = json.loads(response)
+    except json.JSONDecodeError:
+        raise ValueError("The response is not a valid JSON format")
+
+    return json_response
