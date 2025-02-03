@@ -1,7 +1,7 @@
 from fastapi import FastAPI
 from langserve import add_routes, RemoteRunnable
 from routes.ingredient_routes import router
-from fastapi_cors import CORS
+from fastapi.middleware.cors import CORSMiddleware
 
 app = FastAPI(
     title="Nutrify API",
@@ -14,7 +14,7 @@ app.include_router(router, prefix="/api/v1")
 
 # Add CORS middleware
 app.add_middleware(
-    CORS,
+    CORSMiddleware,
     allow_origins=["*"],  # Adjust this to restrict allowed origins
     allow_credentials=True,
     allow_methods=["*"],
