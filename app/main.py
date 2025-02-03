@@ -1,6 +1,7 @@
 from chains.analysis_chain import create_analysis_chain
 from prompts.nutrition_prompt import get_main_prompt
 from models.openai_model import get_model
+import json
 
 
 def main(ingredients):
