@@ -8,3 +8,4 @@ asyncio
 langserve
 python-multipart
 sse_starlette
+fastapi-cors
