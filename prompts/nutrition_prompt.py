@@ -7,7 +7,19 @@ def get_examples():
     """
     return [
         {
-            "ingredients": ["Sugar", "Palm Oil", "Vitamin C", "Salt"],
+            "raw_text": """
+1. **List of Ingredients:**
+- Sugar
+- Palm Oil
+- Vitamin C
+- Salt
+
+2. **Nutritional Facts:**
+- Energy: 200 kcal
+- Total Fat: 10g
+- Saturated Fat: 5g
+- Sodium: 300mg
+""",
             "analysis": {
                 "Sugar": [
                     "Harmful",
@@ -28,40 +40,12 @@ def get_examples():
                 "overall_rating": 6,
             },
         },
-        {
-            "ingredients": [
-                "Whole Grain Oats",
-                "Almonds",
-                "Honey",
-                "Artificial Flavoring",
-            ],
-            "analysis": {
-                "Whole Grain Oats": [
-                    "Beneficial",
-                    "Rich in fiber, it promotes heart health and improves digestion.",
-                ],
-                "Almonds": [
-                    "Beneficial",
-                    "High in healthy fats, vitamins, and antioxidants.",
-                ],
-                "Honey": [
-                    "Neutral",
-                    "Natural sweetener but still high in sugar content.",
-                ],
-                "Artificial Flavoring": [
-                    "Harmful",
-                    "Contains synthetic chemicals that may cause allergic reactions or health concerns.",
-                ],
-                "overall_rating": 8,
-            },
-        },
     ]
 
 
 def get_main_prompt():
     """
     Returns the main prompt template for ingredient analysis.
-    :param model: OpenAI model instance
     :return: LangChain prompt template
     """
     examples = get_examples()
@@ -69,7 +53,10 @@ def get_main_prompt():
     # Few-shot examples
     few_shot_prompt = FewShotChatMessagePromptTemplate(
         example_prompt=ChatPromptTemplate.from_messages(
-            [("human", "{ingredients}"), ("ai", "{analysis}")]
+            [
+                ("human", "{ingredients}"),
+                ("ai", "{analysis}"),
+            ]
         ),
         examples=examples,
     )
@@ -80,9 +67,25 @@ def get_main_prompt():
             (
                 "system",
                 """
-You are an expert nutritionist. When analyzing food ingredients, always return the results in the JSON format.
-Include an overall rating (1-10) at the end of the response in the same json format.
-Include an overall summary at the end, only if explicitly requested.
+You are an expert nutritionist analyzing food product labels. The following text contains information about the product's ingredients and nutritional facts.
+Your task is to:
+1. Parse the raw text to identify the list of ingredients and nutritional facts.
+2. Analyze each ingredient and provide a rating: "Beneficial", "Neutral", or "Harmful".
+3. Include a brief explanation for each ingredient's rating.
+4. Calculate an overall product rating (1-10) based on both the ingredients and nutritional facts.
+5. Return the results in the following JSON format:
+{
+    "ingredients": {
+        "ingredient_name": {
+            "Rating": ["rating", "explanation"]
+        },
+        ...
+    },
+    "overall_rating": number
+}
+If a field is missing or unclear, use "null" as the value.
+Do not include nutritional facts in the output. They should only influence the overall rating.
+Return ONLY the JSON object without any additional explanations or comments.
 """,
             ),
             few_shot_prompt,
