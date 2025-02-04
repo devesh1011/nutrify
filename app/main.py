@@ -5,10 +5,10 @@ import json
 
 
 def main(ingredients):
-    # Initialize the OpenAI model
+    # model initialization
     model = get_model()
 
-    # Load the main prompt
+    # loads the main prompt template
     main_prompt = get_main_prompt()
 
     # Create the chain by combining prompt and model
