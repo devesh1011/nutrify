@@ -2,7 +2,12 @@ from fastapi import UploadFile, HTTPException
 from groq import Groq
 import os
 import base64
+from llm.model import get_model
+from chains.analysis_chain import create_analysis_chain
+from prompts.nutrition_prompt import text_refine_prompt
 import json
+
+llm = get_model()
 
 
 def encode_image(image_path):
@@ -71,74 +76,46 @@ async def process_image(file: UploadFile):
         raise HTTPException(status_code=500, detail=str(e))
 
 
-def clean_json_response(response):
-    """
-    Cleans up a JSON response by removing markdown code blocks and trailing text.
-
-    Args:
-        response (str): The raw response from the LLM.
-
-    Returns:
-        str: The cleaned-up JSON string.
-    """
-    if response.startswith("```json") and response.endswith("```"):
-        response = response[7:-4].strip()
-
-    # Step 2: Remove any trailing text after the JSON object
-    try:
-        # Find the last closing brace of the JSON object
-        last_brace_index = response.rindex("}")
-        response = response[: last_brace_index + 1]
-    except ValueError:
-        raise ValueError("Invalid JSON format: Could not find closing brace '}'.")
-
-    # Step 3: Validate that the cleaned response starts with '{' and ends with '}'
-    if not response.startswith("{") or not response.endswith("}"):
-        raise ValueError(
-            "Invalid JSON format: Response must start with '{' and end with '}'."
-        )
-
-    return response
-
-
 def refine_extracted_text(extracted_text):
+    llm = get_model()
+
+    chain = create_analysis_chain(text_refine_prompt, llm)
+    refined_text = chain.invoke({"text": extracted_text})
+    return refined_text
+
+
+def clean_text(input_text):
     """
-    Refines the extracted text to separate ingredients and nutritional facts.
+    Cleans up the input text by:
+    1. Removing '**' markers.
+    2. Replacing newline characters ('\n') with commas (',').
 
     Args:
-        extracted_text (str): The raw text extracted from the image.
+        input_text (str): The raw text to be cleaned.
 
     Returns:
-        dict: A dictionary containing "ingredients" and "nutrition_facts".
+        str: The cleaned-up text.
     """
-    # Define the prompt for refining the text
-    prompt = f"""
-You are an expert at parsing and organizing unstructured text. The following text contains information extracted from a food product label.
-Your task is to:
-1. Identify and extract the list of ingredients.
-2. Identify and extract the nutritional facts.
-3. Return the results in non markdown format.
+    # Step 1: Remove '**' markers
+    cleaned_text = input_text.replace("**", "")
 
-Here is the extracted text:
-{extracted_text}
-"""
+    # Step 2: Replace '\n' with ','
+    cleaned_text = cleaned_text.replace("\n", "")
+    return cleaned_text
 
-    # Initialize Groq client
-    groq_client = Groq(api_key=os.environ["GROQ_API_KEY"])
 
-    # Send the prompt to the Groq API
-    response = groq_client.chat.completions.create(
-        model="llama-3.2-11b-vision-preview",
-        messages=[
-            {
-                "role": "system",
-                "content": "You are an expert at parsing and organizing unstructured text.",
-            },
-            {"role": "user", "content": prompt},
-        ],
-    )
+def clean_response(response: str) -> dict:
+    """Clean and parse LLM response into JSON"""
+    # Remove markdown code blocks
+    if "```json" in response:
+        response = response.split("```json")[1]
+    if "```" in response:
+        response = response.split("```")[0]
 
-    # Extract the refined text from the response
-    refined_text = response.choices[0].message.content.strip()
+    # Remove newlines and clean string
+    response = response.strip()
 
-    return refined_text
+    try:
+        return json.loads(response)
+    except json.JSONDecodeError as e:
+        raise ValueError(f"Invalid JSON response: {str(e)}")
