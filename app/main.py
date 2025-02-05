@@ -1,26 +1,22 @@
 from chains.analysis_chain import create_analysis_chain
 from prompts.nutrition_prompt import get_main_prompt
-from models.openai_model import get_model
-import json
-
+from llm.model import get_model
+from utils import clean_response
 
 def main(ingredients):
-    # model initialization
-    model = get_model()
-
-    # loads the main prompt template
-    main_prompt = get_main_prompt()
-
-    # Create the chain by combining prompt and model
-    chain = create_analysis_chain(main_prompt, model)
-    response = chain.invoke({"ingredients": ingredients})
-
-    if response.startswith("```json\n") and response.endswith("\n```"):
-        response = response[8:-4]
-
     try:
-        json_response = json.loads(response)
-    except json.JSONDecodeError:
-        raise ValueError("The response is not a valid JSON format")
+        # Get model and prompt
+        model = get_model()
+        main_prompt = get_main_prompt()
 
-    return json_response
+        # Create and run chain
+        chain = create_analysis_chain(main_prompt, model)
+        response = chain.invoke({"ingredients": ingredients})
+
+        # Clean and parse response
+        if isinstance(response, str):
+            return clean_response(response)
+        return response
+
+    except Exception as e:
+        raise ValueError(f"Analysis error: {str(e)}")
